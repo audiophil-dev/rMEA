@@ -860,6 +860,8 @@ mycolz = function(n,demo=F,alpha=1){
 #' Graphical representation of the lagged cross-correlations in time. Provides an intuitive description of synchronization dynamics.
 #'
 #' @param mea an object of class \code{MEA} (see function \code{\link{readMEA}}).
+#' @param from integer. the first window to plot
+#' @param to integer. the last window to plot
 #' @param legendSteps integer. the number of levels used for the color-coding of the legend.
 #' @param rescale logical. If TRUE, the color range will represent the minimum and maximum of the data. Otherwise the theoretical correlation range -1 to 1.
 #' @param colors a vector of colors defining the plot scale.
@@ -869,10 +871,18 @@ mycolz = function(n,demo=F,alpha=1){
 #' @details The cross-correlation values are rescaled to be in a range from 0 to 1 before plotting.
 #' @export
 
-MEAheatmap  = function(mea, legendSteps = 10, rescale = FALSE, colors = c("#F5FBFF","#86E89E","#FFF83F","#E8A022","#FF3700"), bias = 1, mirror=TRUE){
+MEAheatmap  = function(mea, from = 0, to = NULL, legendSteps = 10, rescale = FALSE, colors = c("#F5FBFF","#86E89E","#FFF83F","#E8A022","#FF3700"), bias = 1, mirror=TRUE){
   if(!is.MEA(mea) || is.null(mea$ccf)) stop("Only MEA objects with ccf analysis can be plotted by this function.",call.=F)
   ABS = !any(stats::na.omit(mea$ccf)<0) #do we have negative numbers?
   mat = mea$ccf
+
+  if(to<from) stop("'to' cannot be smaller than 'from'",call.=F)
+
+  if(missing(to)){
+    to = nrow(mat)
+  }
+
+  mat = (mat)[from:to,]
   if(grep("z",attributes(mea)$ccf$filter)) mat = tanh(mat) #revert fisher's z transform to have -1:1 range
   if(rescale){
     if(ABS) mat = rangeRescale(mat, 0,1)
@@ -908,7 +918,7 @@ MEAheatmap  = function(mea, legendSteps = 10, rescale = FALSE, colors = c("#F5FB
   #axis
   xleft = rep(1:plotW, each =plotH)
   ybottom = rep(1:plotH,plotW)
-  graphics::axis(1,at = 0.5+(1:attr(mea,"ccf")$n_win),labels=(1:attr(mea,"ccf")$n_win) )
+  graphics::axis(1,at = 0.5+(1:(to-from+1)),labels=(from:to) )
   graphics::axis(2,at = 1.5+(-attr(mea,"ccf")$lag :attr(mea,"ccf")$lag )*sampRate + attr(mea,"ccf")$lag*sampRate,
        labels=-attr(mea,"ccf")$lag:attr(mea,"ccf")$lag )
 

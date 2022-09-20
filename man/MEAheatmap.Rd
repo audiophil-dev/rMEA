@@ -6,6 +6,8 @@
 \usage{
 MEAheatmap(
   mea,
+  from = 0,
+  to = NULL,
   legendSteps = 10,
   rescale = FALSE,
   colors = c("#F5FBFF", "#86E89E", "#FFF83F", "#E8A022", "#FF3700"),
